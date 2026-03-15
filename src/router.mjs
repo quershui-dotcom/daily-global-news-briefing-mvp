@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { env } from './env.mjs';
+import { previewBriefingForTelegram, publishBriefingToTelegram } from './publishers/telegram-publisher.mjs';
 import { answerBriefingQuestion } from './services/openai.mjs';
 import { generateDailyBriefing, updateBriefing } from './services/briefing-service.mjs';
 import { publishBriefingToHuawei } from './services/huawei-push.mjs';
@@ -16,7 +17,8 @@ function parseDateFromPath(pathname, prefix) {
 }
 
 export async function routeRequest(req, res) {
-  const url = new URL(req.url, env.PUBLIC_BASE_URL);
+  const requestBaseUrl = env.PUBLIC_BASE_URL || `http://localhost:${env.PORT}`;
+  const url = new URL(req.url, requestBaseUrl);
   const pathname = url.pathname;
 
   if (pathname === '/favicon.ico') {
@@ -62,6 +64,9 @@ export async function routeRequest(req, res) {
         publicBaseUrl: env.PUBLIC_BASE_URL,
         hasOpenAIKey: Boolean(env.OPENAI_API_KEY),
         openaiModel: env.OPENAI_MODEL,
+        hasTelegramConfig: Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID),
+        hasTelegramBotToken: Boolean(env.TELEGRAM_BOT_TOKEN),
+        hasTelegramChatId: Boolean(env.TELEGRAM_CHAT_ID),
         hasHuaweiConfig: Boolean(env.HUAWEI_APP_ID && env.HUAWEI_CLIENT_ID && env.HUAWEI_CLIENT_SECRET),
       },
     });
@@ -135,6 +140,27 @@ export async function routeRequest(req, res) {
       status: body.status || 'draft',
     });
     sendJson(res, 200, { ok: true, briefing });
+    return;
+  }
+
+  if (req.method === 'GET' && pathname.startsWith('/api/briefings/') && pathname.endsWith('/telegram-preview')) {
+    const date = pathname.slice('/api/briefings/'.length, -'/telegram-preview'.length);
+    const preview = previewBriefingForTelegram(date);
+    sendJson(res, 200, { ok: true, preview });
+    return;
+  }
+
+  if (req.method === 'POST' && pathname.startsWith('/api/briefings/') && pathname.endsWith('/publish/telegram')) {
+    const date = pathname.slice('/api/briefings/'.length, -'/publish/telegram'.length);
+    const result = await publishBriefingToTelegram(date);
+    sendJson(res, 200, { ok: true, result });
+    return;
+  }
+
+  if (req.method === 'POST' && pathname.startsWith('/api/briefings/') && pathname.endsWith('/publish/huawei')) {
+    const date = pathname.slice('/api/briefings/'.length, -'/publish/huawei'.length);
+    const result = await publishBriefingToHuawei(date);
+    sendJson(res, 200, { ok: true, result });
     return;
   }
 

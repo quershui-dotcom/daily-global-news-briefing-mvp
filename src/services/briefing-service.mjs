@@ -37,10 +37,20 @@ function mapAiItem(cluster, aiItem = {}) {
   };
 }
 
+function normalizePublishChannels(previous = {}, next = {}) {
+  return {
+    ...previous,
+    ...next,
+  };
+}
+
 export async function generateDailyBriefing({ date = toIsoDate(), demo = false } = {}) {
   if (demo) {
+    const demoBriefing = createDemoBriefing(date);
+    const existing = getBriefing(date);
     return saveBriefing({
-      ...createDemoBriefing(date),
+      ...demoBriefing,
+      publishChannels: normalizePublishChannels(existing?.publishChannels, demoBriefing.publishChannels),
       updatedAt: new Date().toISOString(),
     });
   }
@@ -73,15 +83,17 @@ export async function generateDailyBriefing({ date = toIsoDate(), demo = false }
     return mapAiItem(cluster, matched);
   });
 
+  const existing = getBriefing(date);
+
   const briefing = {
     date,
     title: aiCopy.title || `全球热点简报 · ${date}`,
     overview: aiCopy.overview || '',
     videoScript: aiCopy.videoScript || '',
     status: 'draft',
-    createdAt: new Date().toISOString(),
+    createdAt: existing?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    publishedAt: null,
+    publishedAt: existing?.publishedAt || null,
     demoMode: false,
     generation: {
       mode: aiCopy.mode,
@@ -91,6 +103,7 @@ export async function generateDailyBriefing({ date = toIsoDate(), demo = false }
     },
     sourceReports: ingestResult.reports,
     errors: ingestResult.errors,
+    publishChannels: normalizePublishChannels(existing?.publishChannels),
     items: mappedItems,
   };
 
@@ -106,6 +119,7 @@ export function updateBriefing(date, patch) {
   const nextBriefing = {
     ...briefing,
     ...patch,
+    publishChannels: normalizePublishChannels(briefing.publishChannels, patch.publishChannels),
     updatedAt: new Date().toISOString(),
   };
 

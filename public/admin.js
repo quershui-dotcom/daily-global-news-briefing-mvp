@@ -5,6 +5,8 @@ const state = {
 const statusPanel = document.querySelector('#statusPanel');
 const briefingEditor = document.querySelector('#briefingEditor');
 const deviceResult = document.querySelector('#deviceResult');
+const publishResult = document.querySelector('#publishResult');
+const telegramPreview = document.querySelector('#telegramPreview');
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -21,20 +23,6 @@ async function api(path, options = {}) {
   return payload;
 }
 
-function renderStatus(data) {
-  statusPanel.innerHTML = `
-    <div class="status-item"><span>今天日期</span><strong>${data.today}</strong></div>
-    <div class="status-item"><span>最新简报</span><strong>${data.latestBriefingDate || '暂无'}</strong></div>
-    <div class="status-item"><span>OpenAI</span><strong>${data.config.hasOpenAIKey ? `已配置 (${data.config.openaiModel})` : '未配置'}</strong></div>
-    <div class="status-item"><span>华为 Push Kit</span><strong>${data.config.hasHuaweiConfig ? '已配置' : '未配置'}</strong></div>
-    <div class="status-item"><span>登记设备数</span><strong>${data.deviceCount}</strong></div>
-  `;
-}
-
-function tagInputValue(tags) {
-  return Array.isArray(tags) ? tags.join(', ') : '';
-}
-
 function escapeHtml(value = '') {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -44,14 +32,39 @@ function escapeHtml(value = '') {
     .replace(/'/g, '&#39;');
 }
 
+function tagInputValue(tags) {
+  return Array.isArray(tags) ? tags.join(', ') : '';
+}
+
+function renderStatus(data) {
+  statusPanel.innerHTML = `
+    <div class="status-item"><span>今天日期</span><strong>${data.today}</strong></div>
+    <div class="status-item"><span>最新简报</span><strong>${data.latestBriefingDate || '暂无'}</strong></div>
+    <div class="status-item"><span>OpenAI</span><strong>${data.config.hasOpenAIKey ? `已配置 (${data.config.openaiModel})` : '未配置'}</strong></div>
+    <div class="status-item"><span>Telegram</span><strong>${data.config.hasTelegramConfig ? 'Bot + Chat 已配置' : '未完全配置'}</strong></div>
+    <div class="status-item"><span>华为 Push Kit</span><strong>${data.config.hasHuaweiConfig ? '已配置' : '未配置'}</strong></div>
+    <div class="status-item"><span>华为设备数</span><strong>${data.deviceCount}</strong></div>
+  `;
+}
+
+function renderChannelResults(briefing) {
+  const channels = briefing?.publishChannels || {};
+  publishResult.textContent = Object.keys(channels).length
+    ? JSON.stringify(channels, null, 2)
+    : '暂无发布记录';
+}
+
 function renderBriefingEditor(briefing) {
   if (!briefing) {
     briefingEditor.innerHTML = '<div class="editor-empty">还没有简报，先点击上方按钮。</div>';
+    renderChannelResults(null);
     return;
   }
 
+  renderChannelResults(briefing);
+
   const notice = briefing.demoMode
-    ? '<div class="notice">当前为演示数据，仅用于展示交互链路，不代表真实新闻。</div>'
+    ? '<div class="notice">当前为演示数据，仅用于展示完整发布链路，不代表真实新闻。</div>'
     : '';
 
   briefingEditor.innerHTML = `
@@ -155,7 +168,10 @@ async function generateBriefing(demo = false) {
 }
 
 async function saveBriefing() {
-  if (!state.briefing) return;
+  if (!state.briefing) {
+    return null;
+  }
+
   const payload = collectBriefingPayload();
   const saved = await api(`/api/briefings/${state.briefing.date}/save`, {
     method: 'POST',
@@ -163,15 +179,38 @@ async function saveBriefing() {
   });
   state.briefing = saved.briefing;
   renderBriefingEditor(state.briefing);
+  return saved.briefing;
 }
 
-async function publishBriefing() {
-  if (!state.briefing) return;
-  const payload = await api(`/api/briefings/${state.briefing.date}/publish`, {
+async function previewTelegram() {
+  if (!state.briefing) {
+    return;
+  }
+  const payload = await api(`/api/briefings/${state.briefing.date}/telegram-preview`);
+  telegramPreview.textContent = payload.preview.text || '暂无内容';
+}
+
+async function publishTelegram() {
+  if (!state.briefing) {
+    return;
+  }
+  const payload = await api(`/api/briefings/${state.briefing.date}/publish/telegram`, {
     method: 'POST',
     body: JSON.stringify({}),
   });
-  deviceResult.textContent = JSON.stringify(payload.result, null, 2);
+  publishResult.textContent = JSON.stringify(payload.result, null, 2);
+  await loadStatusAndBriefing();
+}
+
+async function publishHuawei() {
+  if (!state.briefing) {
+    return;
+  }
+  const payload = await api(`/api/briefings/${state.briefing.date}/publish/huawei`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+  publishResult.textContent = JSON.stringify(payload.result, null, 2);
   await loadStatusAndBriefing();
 }
 
@@ -207,10 +246,29 @@ document.querySelector('#saveBtn')?.addEventListener('click', async () => {
   }
 });
 
-document.querySelector('#publishBtn')?.addEventListener('click', async () => {
+document.querySelector('#previewTelegramBtn')?.addEventListener('click', async () => {
   try {
     await saveBriefing();
-    await publishBriefing();
+    await previewTelegram();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+document.querySelector('#publishTelegramBtn')?.addEventListener('click', async () => {
+  try {
+    await saveBriefing();
+    await previewTelegram();
+    await publishTelegram();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+document.querySelector('#publishHuaweiBtn')?.addEventListener('click', async () => {
+  try {
+    await saveBriefing();
+    await publishHuawei();
   } catch (error) {
     alert(error.message);
   }

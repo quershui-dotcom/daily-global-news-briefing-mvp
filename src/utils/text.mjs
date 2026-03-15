@@ -21,7 +21,7 @@ export function stripHtml(value = '') {
 }
 
 export function normalizeWhitespace(value = '') {
-  return value.replace(/\s+/g, ' ').trim();
+  return String(value).replace(/\s+/g, ' ').trim();
 }
 
 export function escapeHtml(value = '') {
@@ -125,4 +125,55 @@ export function formatDateTime(value) {
     return value;
   }
   return date.toLocaleString('zh-CN', { hour12: false });
+}
+
+export function chunkText(text, maxLength = 4000) {
+  const cleanText = String(text ?? '').replace(/\r\n/g, '\n').trim();
+  if (!cleanText) {
+    return [];
+  }
+
+  const paragraphs = cleanText.split(/\n{2,}/);
+  const chunks = [];
+  let current = '';
+
+  const flush = () => {
+    if (current) {
+      chunks.push(current);
+      current = '';
+    }
+  };
+
+  for (const paragraph of paragraphs) {
+    if (paragraph.length > maxLength) {
+      flush();
+      let remaining = paragraph;
+      while (remaining.length > maxLength) {
+        let splitIndex = remaining.lastIndexOf('\n', maxLength);
+        if (splitIndex < maxLength * 0.3) {
+          splitIndex = remaining.lastIndexOf(' ', maxLength);
+        }
+        if (splitIndex < maxLength * 0.3) {
+          splitIndex = maxLength;
+        }
+        chunks.push(remaining.slice(0, splitIndex).trim());
+        remaining = remaining.slice(splitIndex).trim();
+      }
+      if (remaining) {
+        current = remaining;
+      }
+      continue;
+    }
+
+    const candidate = current ? `${current}\n\n${paragraph}` : paragraph;
+    if (candidate.length <= maxLength) {
+      current = candidate;
+    } else {
+      flush();
+      current = paragraph;
+    }
+  }
+
+  flush();
+  return chunks;
 }

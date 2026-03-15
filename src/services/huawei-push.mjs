@@ -63,12 +63,26 @@ export async function publishBriefingToHuawei(date) {
   const requestBody = buildRequestBody({ briefing, tokens });
 
   if (!tokens.length || !env.HUAWEI_APP_ID || !env.HUAWEI_CLIENT_ID || !env.HUAWEI_CLIENT_SECRET) {
-    return {
+    const previewResult = {
       mode: 'preview',
-      message: '缺少设备 Token 或华为 Push Kit 凭据，返回预览请求体。',
+      message: '缺少设备 Token 或华为 Push Kit 凭据，返回请求预览。',
       requestBody,
       deviceCount: tokens.length,
+      ok: false,
+      sentAt: new Date().toISOString(),
     };
+
+    const nextBriefing = {
+      ...briefing,
+      publishChannels: {
+        ...(briefing.publishChannels || {}),
+        huawei: previewResult,
+      },
+      updatedAt: new Date().toISOString(),
+    };
+
+    saveBriefing(nextBriefing);
+    return previewResult;
   }
 
   const accessToken = await getHuaweiAccessToken();
@@ -90,16 +104,22 @@ export async function publishBriefingToHuawei(date) {
     payload = { rawText };
   }
 
+  const publishResult = {
+    sentAt: new Date().toISOString(),
+    ok: response.ok,
+    status: response.status,
+    payload,
+    deviceCount: tokens.length,
+    mode: 'sent',
+  };
+
   const nextBriefing = {
     ...briefing,
     status: response.ok ? 'published' : briefing.status,
     publishedAt: response.ok ? new Date().toISOString() : briefing.publishedAt,
-    publishResult: {
-      sentAt: new Date().toISOString(),
-      ok: response.ok,
-      status: response.status,
-      payload,
-      deviceCount: tokens.length,
+    publishChannels: {
+      ...(briefing.publishChannels || {}),
+      huawei: publishResult,
     },
     updatedAt: new Date().toISOString(),
   };
@@ -110,5 +130,5 @@ export async function publishBriefingToHuawei(date) {
     throw new Error(`华为 Push Kit 推送失败: ${response.status} ${rawText}`);
   }
 
-  return nextBriefing.publishResult;
+  return publishResult;
 }

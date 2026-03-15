@@ -83,6 +83,12 @@ p {
   margin-top: 16px;
 }
 
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 .panel {
   padding: 20px;
   margin-top: 16px;
@@ -162,6 +168,11 @@ textarea {
   border-radius: 12px;
   overflow: auto;
   color: #b9d8ff;
+}
+
+.code-box-large {
+  min-height: 220px;
+  max-height: 560px;
 }
 
 .panel-head {
@@ -274,7 +285,8 @@ textarea {
 
 @media (max-width: 860px) {
   .grid,
-  .editor-meta {
+  .editor-meta,
+  .result-grid {
     grid-template-columns: 1fr;
   }
 
