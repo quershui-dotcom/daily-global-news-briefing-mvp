@@ -1,0 +1,12 @@
+{
+  "name": "daily-global-news-briefing-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "daily": "node scripts/run-daily.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs"
+  }
+}

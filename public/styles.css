@@ -1,0 +1,286 @@
+:root {
+  color-scheme: dark;
+  --bg: #07111f;
+  --panel: #0d1b2a;
+  --panel-2: #10253a;
+  --text: #ecf4ff;
+  --muted: #94a8c0;
+  --brand: #4ea1ff;
+  --brand-2: #7ee7ff;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(78, 161, 255, 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(126, 231, 255, 0.12), transparent 26%),
+    var(--bg);
+  color: var(--text);
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+a {
+  color: var(--brand-2);
+}
+
+.shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 0 48px;
+}
+
+.shell-mobile {
+  width: min(860px, calc(100vw - 18px));
+}
+
+.hero,
+.panel,
+.story-card,
+.mobile-card,
+.qa-box {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.hero {
+  padding: 28px;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(78, 161, 255, 0.16);
+  color: var(--brand-2);
+  font-size: 12px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 12px;
+}
+
+p {
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.panel {
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.status-list {
+  display: grid;
+  gap: 10px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  border-radius: 14px;
+}
+
+.btn {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--brand), #2454ff);
+  border-color: transparent;
+}
+
+.btn-ghost {
+  background: transparent;
+}
+
+.hero-actions,
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.code-box {
+  margin: 12px 0 0;
+  min-height: 52px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 12px;
+  overflow: auto;
+  color: #b9d8ff;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.editor-empty {
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.editor-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.story-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.story-card {
+  padding: 16px;
+}
+
+.story-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.pill-row,
+.source-list,
+.chip-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill,
+.chip {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(78, 161, 255, 0.14);
+  color: #cde8ff;
+  font-size: 12px;
+}
+
+.checkbox-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.checkbox-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-hero {
+  padding: 22px;
+}
+
+.mobile-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.mobile-card {
+  padding: 18px;
+  margin-top: 14px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.qa-box {
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.qa-answer {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(78, 161, 255, 0.08);
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+.notice {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(240, 180, 41, 0.15);
+  color: #ffe9a9;
+  margin-top: 10px;
+}
+
+@media (max-width: 860px) {
+  .grid,
+  .editor-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .hero,
+  .panel-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
